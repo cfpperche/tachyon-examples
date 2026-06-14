@@ -1,0 +1,49 @@
+# tachyon-examples — a real, runnable demo of Tachyon's capabilities.
+# This is a STANDALONE git repo, so `worktree: true` works for real: each
+# worktree agent runs on its own branch (isolate → review → verify).
+# Docs & format: https://github.com/cfpperche/tachyon
+
+agents:
+  # The orchestrator — drives the fleet via the MCP Bridge tools.
+  claude:
+    cmd: claude
+    autostart: true
+    instructions: you are the orchestrator; delegate reviews to codex via the tachyon tools
+
+  # A second model as a reviewer — Claude can ask it to review a diff.
+  codex:
+    cmd: codex
+    instructions: you are the code reviewer; flag correctness and security issues
+
+  # A feature agent ISOLATED on its own git worktree + branch (the ⎇ badge).
+  # `verify: test` runs `npm test` (vitest) IN the worktree to prove the branch
+  # is shippable — the ✓/✗/⊘ badge. Review its diff, then merge with plain git.
+  feature:
+    cmd: claude
+    worktree: true
+    verify: test
+    instructions: implement the feature on your own branch; run Verify before handing off
+
+terminals:
+  # Non-AI processes — servers, shells, builds (attention off by default).
+  dev:
+    cmd: npm run dev
+    watch: "src/**"     # restarts when source changes
+  shell:
+    cmd: bash
+
+commands:
+  test: {cmd: npm test}
+  lint: {cmd: npm run lint}
+
+runbooks:
+  ship:                  # the pre-merge gate, as a runbook
+    steps: [lint, test]
+
+schedules:
+  hourly-tests:          # run the suite every hour while the workspace is open
+    every: 1h
+    run: test
+
+settings:
+  auth: true             # require a Bearer token on the MCP Bridge (recommended)
