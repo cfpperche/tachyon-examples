@@ -1,0 +1,7 @@
+{
+  "folders": [
+    { "path": "orbit-api" },
+    { "path": "orbit-worker" }
+  ],
+  "settings": {}
+}

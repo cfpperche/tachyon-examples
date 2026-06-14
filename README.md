@@ -1,40 +1,43 @@
 # tachyon-examples
 
-A real, runnable demo workspace for [**Tachyon**](https://github.com/cfpperche/tachyon) —
+Real, runnable demo workspaces for [**Tachyon**](https://github.com/cfpperche/tachyon) —
 multi-agent terminal orchestration in VS Code. Clone it, open it, and drive a fleet of AI
 agents as native editor terminals coordinated through the MCP Bridge.
 
-It's a tiny Express API (real routes, real `vitest` tests, real lint) so the agents have
-genuine work to run — `npm test` actually tests, `verify:` actually verifies.
+It's an npm-workspaces monorepo of two tiny services with **real `vitest` tests and lint**, so
+the agents have genuine work — `npm test` actually tests, `verify:` actually verifies.
 
-> **Why a standalone repo?** Tachyon's worktree isolation forks a *git* worktree per agent,
-> so the demo has to be its own git repository (not nested inside another). This repo is that —
-> which is what lets the `feature` agent below run on its own branch for real.
-
-## Try it
+- **`orbit-api/`** — a tiny Express API (routes, tests) — the main service the agents work on.
+- **`orbit-worker/`** — a companion telemetry worker — the second folder for the multi-root demo.
 
 ```bash
 git clone https://github.com/cfpperche/tachyon-examples ~/tachyon-examples
-cd ~/tachyon-examples && npm install
-code .                      # open in VS Code with the Tachyon extension installed
-# Cmd/Ctrl-Shift-P → "Tachyon: Start"
+cd ~/tachyon-examples && npm install        # installs both workspaces
 ```
 
-## What the `tachyon.yml` shows
+## Two ways to open it — two capabilities
 
-| Entry | Capability |
+### 1. Single workspace + the worktree loop
+Open the **repo root** (`code ~/tachyon-examples`) → uses the root [`tachyon.yml`](tachyon.yml).
+Because the repo root *is* a git repo, the **`feature` agent** (`worktree: true`, `verify: test`)
+runs on **its own git branch** (the ⎇ badge); **Verify** runs the monorepo's `npm test` *in the
+worktree* (the ✓/✗/⊘ badge). Review its diff in the editor, then merge with plain git —
+**isolate → review → verify.**
+
+### 2. Multi-root (two folders, two Bridges)
+Open [`orbit.code-workspace`](orbit.code-workspace) → `orbit-api` **and** `orbit-worker` as two
+folders, each with its own `tachyon.yml`, its own MCP Bridge, and its own tmux namespace —
+Tachyon keeps them isolated. This is the **multi-workspace** capability.
+
+## What the configs show
+
+| Where | Capability |
 |---|---|
-| `agents.claude` (autostart) | the orchestrator — drives the fleet via the Bridge MCP tools |
-| `agents.codex` | a second model as a reviewer Claude can delegate to |
-| **`agents.feature`** (`worktree: true`, `verify: test`) | **the worktree loop** — isolated on its own git branch (⎇), `Verify` runs `npm test` in the worktree (✓/✗/⊘), review the diff, then merge with plain git |
-| `terminals.dev` / `terminals.shell` | non-AI processes (the dev server restarts on `src/**` changes) |
+| root `tachyon.yml` → `feature` (`worktree`+`verify`) | the worktree loop — isolate → review → verify, real git branch + real `npm test` gate |
+| root / per-folder `agents` | AI CLIs (claude orchestrates, codex reviews) over the Bridge |
+| `terminals:` | non-AI processes (dev server restarts on `src/**`; a scratch shell) |
 | `commands` + `runbooks.ship` | curated one-shots + a sequential, exit-code-gated procedure |
-| `schedules.hourly-tests` | a runtime-neutral cron over the suite (human-approved) |
+| `schedules.hourly-tests` | runtime-neutral cron over the suite |
+| `orbit.code-workspace` | multi-root: two services, two Bridges |
 
-## The app
-
-- `src/server.js` — Express app + server bootstrap
-- `src/routes/missions.js` — the routes the agents review/extend
-- `test/server.test.js` — `vitest` + `supertest` (this is what `verify: test` runs)
-
-Scripts: `npm run dev` · `npm test` · `npm run lint`.
+Scripts (root): `npm test` · `npm run lint` · `npm run dev` (all fan out via npm workspaces).

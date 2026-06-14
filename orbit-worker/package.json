@@ -1,0 +1,12 @@
+{
+  "name": "orbit-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/worker.js",
+    "test": "vitest run",
+    "lint": "node --check src/worker.js && echo lint clean"
+  },
+  "devDependencies": { "vitest": "^3.0.0" }
+}
