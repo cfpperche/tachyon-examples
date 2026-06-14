@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 .tachyon/
 .claude/
 # .mcp.json is committed (portable: ${TACHYON_BRIDGE_URL}/${TACHYON_BRIDGE_TOKEN}
