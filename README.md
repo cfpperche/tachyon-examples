@@ -34,6 +34,7 @@ Tachyon keeps them isolated. This is the **multi-workspace** capability.
 | Where | Capability |
 |---|---|
 | root `tachyon.yml` → `feature` (`worktree`+`verify`) | the worktree loop — isolate → review → verify, real git branch + real `npm test` gate |
+| root `tachyon.yml` → `researcher` (`harness`) | isolated harness — its own Tavily web-search MCP, scoped to that agent (the ⚙ badge); no other agent sees it (Tachyon ≥ 0.22, claude-only) |
 | root / per-folder `agents` | AI CLIs (claude orchestrates, codex reviews) over the Bridge |
 | `terminals:` | non-AI processes (dev server restarts on `src/**`; a scratch shell) |
 | `commands` + `runbooks.ship` | curated one-shots + a sequential, exit-code-gated procedure |

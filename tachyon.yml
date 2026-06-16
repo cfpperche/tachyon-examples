@@ -7,25 +7,57 @@
 # Docs & format: https://github.com/cfpperche/tachyon
 
 agents:
-  # The orchestrator — drives the fleet via the MCP Bridge tools.
+  # The orchestrator — drives the fleet via the MCP Bridge tools. `role:` (spec 216) prepends a
+  # built-in role contract; `instructions:` adds the task-specific bit on top (role extends, never
+  # replaces, the instructions).
   claude:
     cmd: claude
     autostart: true
-    instructions: you are the orchestrator; delegate reviews to codex via the tachyon tools
+    role: orchestrator
+    instructions: delegate reviews to codex via the tachyon tools
 
   # A second model as a reviewer.
   codex:
     cmd: codex
-    instructions: you are the code reviewer; flag correctness and security issues
+    role: reviewer
+    instructions: flag correctness and security issues
 
   # Isolated on its own git worktree + branch (the ⎇ badge). `verify: test` runs
   # the monorepo's npm test IN the worktree → the ✓/✗/⊘ badge. Review the diff,
   # then merge with plain git.
   feature:
     cmd: claude
+    role: coder
     worktree: true
     verify: test
     instructions: implement the feature on your own branch; run Verify before handing off
+
+  # ISOLATED HARNESS (spec 226, Tachyon ≥ 0.22) — this claude agent gets its OWN MCP server
+  # (Tavily web search), scoped to ITSELF: no other agent in the fleet sees it. Tachyon materializes a
+  # private config home (.tachyon/harness/researcher/) and runs it with --strict-mcp-config. ⚙ badge.
+  researcher:
+    cmd: claude
+    harness:
+      inherit: workspace               # fleet config + this agent's extras (use `none` for a clean slate)
+      mcp:
+        tavily:
+          command: npx
+          args: ["-y", "tavily-mcp"]
+          env:
+            TAVILY_API_KEY: ${TAVILY_API_KEY}  # Tachyon resolves this from your shell env and injects it
+                                               # into the agent; the literal ${VAR} is what's on disk.
+                                               # Export TAVILY_API_KEY before launching VS Code, or it won't start.
+    instructions: you are the research specialist; use the Tavily MCP for web search and source-gathering
+
+  # An isolated harness is CLAUDE-ONLY in v1 — a `harness:` block on the codex agent above would be a
+  # config error (codex CODEX_HOME support is a follow pass). When it lands it will look like this:
+  #
+  #   codex-research:
+  #     cmd: codex
+  #     harness:
+  #       inherit: workspace
+  #       mcp:
+  #         tavily: { command: npx, args: ["-y", "tavily-mcp"], env: { TAVILY_API_KEY: ${TAVILY_API_KEY} } }
 
 terminals:
   # Non-AI processes — servers, shells, builds (attention off by default).

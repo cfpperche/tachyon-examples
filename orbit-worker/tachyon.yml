@@ -2,6 +2,7 @@
 agents:
   helper:
     cmd: claude
+    role: coder
     instructions: you maintain the telemetry worker
 
 terminals:

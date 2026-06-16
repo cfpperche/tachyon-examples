@@ -2,16 +2,18 @@
 # The worktree + verify showcase lives in the repo-root tachyon.yml (worktree
 # isolation needs the workspace to BE the git root).
 agents:
-  # The orchestrator — drives the fleet via the MCP Bridge tools.
+  # The orchestrator — drives the fleet via the MCP Bridge tools (role: spec 216).
   claude:
     cmd: claude
     autostart: true
-    instructions: you are the orchestrator; delegate reviews to codex via the tachyon tools
+    role: orchestrator
+    instructions: delegate reviews to codex via the tachyon tools
 
   # A second model as a reviewer — Claude can ask it to review a diff.
   codex:
     cmd: codex
-    instructions: you are the code reviewer; flag correctness and security issues
+    role: reviewer
+    instructions: flag correctness and security issues
 
 terminals:
   # Non-AI processes — servers, shells, builds (attention off by default).
