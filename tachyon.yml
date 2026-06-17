@@ -44,9 +44,10 @@ agents:
           command: npx
           args: ["-y", "tavily-mcp"]
           env:
-            TAVILY_API_KEY: ${TAVILY_API_KEY}  # Tachyon resolves this from your shell env and injects it
-                                               # into the agent; the literal ${VAR} is what's on disk.
-                                               # Export TAVILY_API_KEY before launching VS Code, or it won't start.
+            TAVILY_API_KEY: ${TAVILY_API_KEY}  # Put TAVILY_API_KEY in a .env at the repo root (see
+                                               # .env.example) — Tachyon resolves it and injects it into
+                                               # the agent; only the literal ${VAR} is ever on disk.
+                                               # (A shell export also works and takes precedence.)
     instructions: you are the research specialist; use the Tavily MCP for web search and source-gathering
 
   # An isolated harness is CLAUDE-ONLY in v1 — a `harness:` block on the codex agent above would be a

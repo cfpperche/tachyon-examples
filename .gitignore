@@ -1,6 +1,7 @@
 node_modules
 .tachyon/
 .claude/
+.env                 # real secrets for the isolated-harness demo (TAVILY_API_KEY) — never commit; see .env.example
 # .mcp.json is committed (portable: ${TACHYON_BRIDGE_URL}/${TACHYON_BRIDGE_TOKEN}
 # are injected by Tachyon per session) so the demo's Bridge tools work on any clone
 # without a manual "Tachyon: Connect". Running Connect overwrites it with a
