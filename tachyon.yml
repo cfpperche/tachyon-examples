@@ -48,6 +48,8 @@ agents:
                                                # .env.example) — Tachyon resolves it and injects it into
                                                # the agent; only the literal ${VAR} is ever on disk.
                                                # (A shell export also works and takes precedence.)
+      rules: ["rules/researcher.md"]     # this agent's OWN CLAUDE.md context (private to it) — spec 228.
+                                         # `skills: [<dir>]` and `hooks: {...}` work the same way.
     instructions: you are the research specialist; use the Tavily MCP for web search and source-gathering
 
   # An isolated harness is CLAUDE-ONLY in v1 — a `harness:` block on the codex agent above would be a
