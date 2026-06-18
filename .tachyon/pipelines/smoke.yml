@@ -8,7 +8,7 @@
 name: smoke
 nodes:
   hello:
-    agent: claude          # any agent declared in tachyon.yml
+    agent: planner         # a declared pipeline specialist without its own worktree (not the autostart claude)
     task: "Create a file HELLO.md in the current directory with a single friendly line."
     done: signal           # an agent node completes when it calls complete_node (no verify)
     timeout: 10m

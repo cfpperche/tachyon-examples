@@ -52,6 +52,23 @@ agents:
                                          # `skills: [<dir>]` and `hooks: {...}` work the same way.
     instructions: you are the research specialist; use the Tavily MCP for web search and source-gathering
 
+  # PIPELINE SPECIALISTS (spec 230) — declared agents WITHOUT their own worktree, so a pipeline can
+  # INVOKE them (a `worktree: true` agent can't be a pipeline node — the run owns the worktree). They
+  # run only while a pipeline node is working, then STOP (they persist here in the tree, reusable next
+  # run). Each can carry its own harness/MCP/skills/rules like `researcher` above — that's the point:
+  # specialist config composed into a pipeline. The `feature`/`gated` pipelines invoke these.
+  planner:
+    cmd: claude
+    instructions: you are the planner — produce a concise written plan; do NOT write code
+  builder:
+    cmd: claude
+    role: coder
+    instructions: you are the implementer — make the planned change in your working directory
+  reviewer:
+    cmd: codex
+    role: reviewer
+    instructions: you are the reviewer — read the changes and note correctness/security issues
+
   # An isolated harness is CLAUDE-ONLY in v1 — a `harness:` block on the codex agent above would be a
   # config error (codex CODEX_HOME support is a follow pass). When it lands it will look like this:
   #

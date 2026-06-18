@@ -15,18 +15,18 @@
 name: feature
 nodes:
   plan:
-    agent: claude
+    agent: planner
     task: "Write PLAN.md describing a tiny feature in 2-3 bullet points."
     done: signal
     timeout: 15m
   implement:
-    agent: claude
+    agent: builder
     task: "Read PLAN.md (it's in your current directory) and create NOTES.md that works through the plan."
     needs: [plan]
     done: signal
     timeout: 20m
   review:
-    agent: codex
+    agent: reviewer
     task: "Read PLAN.md and NOTES.md in your current directory and write REVIEW.md with a brief critique."
     needs: [implement]
     done: signal
