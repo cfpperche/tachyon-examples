@@ -1,11 +1,13 @@
 # A MIXED pipeline (spec 230): persistent specialist agents + an ad-hoc cmd node.
 # Run it: Command Palette → "Tachyon: Run Pipeline" → pick `mixed` (or ▶ in the Pipelines sidebar).
 #
-# Two kinds of node coexist, per node, sharing the run's git worktree (hand-off via files):
-#   • agent: <declared>  → a persistent specialist (full config). Signals done via complete_node,
-#                          then STOPS (stays in the Agents tree, reusable). done: signal.
-#   • cmd: "<command>"    → an ephemeral ad-hoc one-shot. Must be NON-interactive (exits when done);
-#                          completes by EXIT CODE — no complete_node. Dismissed when done. done: exit.
+# Three node forms coexist, per node, sharing the run's git worktree (hand-off via files):
+#   • agent: <declared>     → a PERSISTENT specialist (full config). Signals done via complete_node,
+#                             then STOPS (stays in the Agents tree, reusable). done: signal[_then_verify].
+#   • cmd: "<command>"      → an EPHEMERAL ad-hoc, dismissed (vanishes) when done. Two flavors:
+#       - non-interactive one-shot (sh / codex exec / claude -p) → done: exit[_then_verify] (exit code).
+#       - EPHEMERAL interactive LLM (e.g. `cmd: codex` with the workspace default config) → done: signal
+#         (it gets the task + complete_node protocol + nonce, signals when done). No pre-declared agent.
 #
 # Here: planner → builder (agents) → summarize (a shell one-shot reading their files) → reviewer
 # (agent, with a human approval gate). The cmd node proves hand-off both ways: it reads PLAN.md/NOTES.md
@@ -30,9 +32,9 @@ nodes:
     done: exit                # completes on exit 0 — no agent, no complete_node
     timeout: 2m
   review:
-    agent: reviewer           # persistent specialist
+    cmd: claude               # EPHEMERAL interactive LLM (workspace default config) — not a declared agent
     task: "Read PLAN.md, NOTES.md and SUMMARY.md in your current directory and write REVIEW.md with a brief critique."
     needs: [summarize]
-    done: signal
+    done: signal              # it signals via complete_node, then is dismissed (vanishes) after approval
     gate: approve             # pauses for your Approve/Reject in the Pipelines sidebar
     timeout: 15m
