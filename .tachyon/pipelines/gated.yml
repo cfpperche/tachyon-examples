@@ -1,0 +1,27 @@
+# A pipeline with a HUMAN APPROVAL GATE (spec 230, Tachyon ≥ 0.24).
+# Run it: Command Palette → "Tachyon: Run Pipeline" → pick `gated`.
+#
+# Same plan → implement → review chain, but `review` carries `gate: approve`: when the review
+# agent signals it's done, the node PARKS at `awaiting-approval` and the run pauses. Open the
+# "Pipelines" section in the Tachyon sidebar, expand the run, and click ✓ Approve (or ✗ Reject)
+# on the `review` node. Approve → the run completes; Reject → the node fails.
+name: gated
+nodes:
+  plan:
+    agent: claude
+    task: "Write PLAN.md describing a tiny feature in 2-3 bullet points."
+    done: signal
+    timeout: 15m
+  implement:
+    agent: claude
+    task: "Read PLAN.md (it's in your current directory) and create NOTES.md that works through the plan."
+    needs: [plan]
+    done: signal
+    timeout: 20m
+  review:
+    agent: codex
+    task: "Read PLAN.md and NOTES.md in your current directory and write REVIEW.md with a brief critique."
+    needs: [implement]
+    done: signal
+    gate: approve        # ← the run pauses here for your Approve/Reject in the sidebar
+    timeout: 15m
