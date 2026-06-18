@@ -1,0 +1,34 @@
+# A REUSABLE, input-driven workflow — plan → implement → review, run once PER ISSUE (spec 231, Tachyon ≥ 0.25).
+# Run it: Command Palette → "Tachyon: Run Pipeline" → pick `feature-issue` → an input file opens →
+# describe the issue, save, click Start.
+#
+# How it differs from `feature.yml` (the fixed-task example):
+#   • `input: required` — the RUN takes an input (the issue) at start; the same definition runs for ANY issue.
+#   • The nodes OMIT `task` — `planner`/`builder`/`reviewer` already carry their persona via their
+#     declared `role`/`instructions` (and an isolated harness, if any) in tachyon.yml. The per-step `task`
+#     is OPTIONAL for a persona agent under `input: required`; the work comes from the run input + the
+#     upstream handoff context, not a hard-coded task. (Add a `task:` only to sharpen a specific step.)
+#   • Each node, when it signals `complete_node`, may pass a short `summary` — Tachyon hands it to the
+#     next node as "## Upstream context" (the worktree still carries the actual files).
+#
+# The worktree-as-state model is unchanged: the RUN owns one worktree; nodes run in sequence in it.
+name: feature-issue
+input: required
+nodes:
+  plan:
+    agent: planner
+    # no task — the planner's persona ("produce a concise written plan; do NOT write code") + the run
+    # input (the issue) are the work. It writes its plan to the run worktree.
+    done: signal
+    timeout: 15m
+  implement:
+    agent: builder
+    needs: [plan]
+    done: signal
+    timeout: 20m
+  review:
+    agent: reviewer
+    needs: [implement]
+    done: signal
+    gate: approve   # a human approves before the run completes
+    timeout: 15m
