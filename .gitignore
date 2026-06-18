@@ -1,5 +1,8 @@
 node_modules
-.tachyon/
+# .tachyon holds runtime state (sessions.json, harness/, runs/) — ignored — EXCEPT
+# pipeline definitions, which are source you version like tachyon.yml.
+.tachyon/*
+!.tachyon/pipelines/
 .claude/
 # real secrets for the isolated-harness demo (TAVILY_API_KEY) — never commit; see .env.example
 .env

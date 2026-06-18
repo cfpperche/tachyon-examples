@@ -1,0 +1,14 @@
+# Smallest agent pipeline — proves the engine end-to-end (spec 230, Tachyon ≥ 0.24).
+# Run it: Command Palette → "Tachyon: Run Pipeline" → pick `smoke`.
+#
+# One one-shot node. It spawns as an ad-hoc agent `pl-<runId>-hello` INTO the run's
+# own git worktree (run-<id>), does the task, and signals completion via the
+# `complete_node` MCP tool (Tachyon appends that protocol to the task). The node then
+# goes `done`, the run completes, and the run worktree is removed.
+name: smoke
+nodes:
+  hello:
+    agent: claude          # any agent declared in tachyon.yml
+    task: "Create a file HELLO.md in the current directory with a single friendly line."
+    done: signal           # an agent node completes when it calls complete_node (no verify)
+    timeout: 10m

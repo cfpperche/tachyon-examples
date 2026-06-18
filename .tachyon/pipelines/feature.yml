@@ -1,0 +1,33 @@
+# A linear multi-agent pipeline — plan → implement → review (spec 230, Tachyon ≥ 0.24).
+# Run it: Command Palette → "Tachyon: Run Pipeline" → pick `feature`.
+#
+# How it works:
+#   • The RUN owns ONE git worktree (run-<id>); every node runs in it IN SEQUENCE, so a
+#     downstream node sees the files an upstream node wrote — the worktree IS the state.
+#   • Each node spawns as an ad-hoc agent `pl-<runId>-<nodeId>` (claude/codex here) and
+#     signals completion with the `complete_node` tool when its task is done.
+#   • `needs:` orders the chain; v1 pipelines are a single linear chain (parallel/fan-out
+#     is a follow pass).
+#
+# Note: these nodes are signal-only (no verify gate) so they run without installing the
+# monorepo's deps in the fresh worktree. A verify-gated node (`done: signal_then_verify`)
+# needs the run worktree's deps installed first — a follow pass (worktree setup).
+name: feature
+nodes:
+  plan:
+    agent: claude
+    task: "Write PLAN.md describing a tiny feature in 2-3 bullet points."
+    done: signal
+    timeout: 15m
+  implement:
+    agent: claude
+    task: "Read PLAN.md (it's in your current directory) and create NOTES.md that works through the plan."
+    needs: [plan]
+    done: signal
+    timeout: 20m
+  review:
+    agent: codex
+    task: "Read PLAN.md and NOTES.md in your current directory and write REVIEW.md with a brief critique."
+    needs: [implement]
+    done: signal
+    timeout: 15m
