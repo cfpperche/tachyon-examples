@@ -1,0 +1,38 @@
+# A MIXED pipeline (spec 230): persistent specialist agents + an ad-hoc cmd node.
+# Run it: Command Palette → "Tachyon: Run Pipeline" → pick `mixed` (or ▶ in the Pipelines sidebar).
+#
+# Two kinds of node coexist, per node, sharing the run's git worktree (hand-off via files):
+#   • agent: <declared>  → a persistent specialist (full config). Signals done via complete_node,
+#                          then STOPS (stays in the Agents tree, reusable). done: signal.
+#   • cmd: "<command>"    → an ephemeral ad-hoc one-shot. Must be NON-interactive (exits when done);
+#                          completes by EXIT CODE — no complete_node. Dismissed when done. done: exit.
+#
+# Here: planner → builder (agents) → summarize (a shell one-shot reading their files) → reviewer
+# (agent, with a human approval gate). The cmd node proves hand-off both ways: it reads PLAN.md/NOTES.md
+# the agents wrote and produces SUMMARY.md, which the reviewer then reads.
+name: mixed
+nodes:
+  plan:
+    agent: planner            # persistent specialist
+    task: "Write PLAN.md describing a tiny feature in 2-3 bullet points."
+    done: signal
+    timeout: 15m
+  implement:
+    agent: builder            # persistent specialist
+    task: "Read PLAN.md (in your current directory) and create NOTES.md that works through the plan."
+    needs: [plan]
+    done: signal
+    timeout: 20m
+  summarize:
+    cmd: "sh -c 'wc -l PLAN.md NOTES.md > SUMMARY.md 2>&1; echo summarized'"   # ad-hoc one-shot
+    task: "Summarize the plan + notes line counts into SUMMARY.md."           # informational for a cmd node
+    needs: [implement]
+    done: exit                # completes on exit 0 — no agent, no complete_node
+    timeout: 2m
+  review:
+    agent: reviewer           # persistent specialist
+    task: "Read PLAN.md, NOTES.md and SUMMARY.md in your current directory and write REVIEW.md with a brief critique."
+    needs: [summarize]
+    done: signal
+    gate: approve             # pauses for your Approve/Reject in the Pipelines sidebar
+    timeout: 15m
