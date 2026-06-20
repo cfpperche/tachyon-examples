@@ -42,3 +42,39 @@ Tachyon keeps them isolated. This is the **multi-workspace** capability.
 | `orbit.code-workspace` | multi-root: two services, two Bridges |
 
 Scripts (root): `npm test` · `npm run lint` · `npm run dev` (all fan out via npm workspaces).
+
+## Dogfood the Activity view
+
+The **Activity view** is the normalized, runtime-agnostic cockpit (a chat — your prompts on the
+right, the agent on the left) you get by clicking the **◆ pulse** action on an agent row. The raw
+terminal stays one click away (**Open terminal**); **Open transcript** opens the JSONL the runtime
+records the session into.
+
+**Drive it (EDH):** open the repo root, let the `claude` agent autostart, then paste this prompt —
+it exercises every Activity surface in one turn:
+
+```
+Add a GET /health route to orbit-api (src/routes) returning {status:"ok",uptime:process.uptime()},
+add a vitest test for it in orbit-api/test, then run `npm test` from the repo root.
+```
+
+Click **◆ Activity** on the `claude` agent and confirm:
+
+- **Chat sides** — your prompt as a right bubble, the agent's replies as left bubbles, **markdown
+  rendered** (bold, lists, clickable links — not raw `**...**`).
+- **💭 Thinking** — a collapsed reasoning toggle on the agent side; expand it.
+- **Tool chips** — one per tool with its args (`Read src/routes`, `Bash npm test`, …); a file op is
+  **clickable** (opens the file); a running tool spins.
+- **Diffs & results** — the `Write`/`Edit` chip shows `+N −M` and a chevron that expands the **diff**;
+  `Bash` shows the test result. A failed tool turns red with the error.
+- **Live** — the feed sticks to the newest message; scroll up and a **↓ Latest** button appears.
+- **Images** — paste a screenshot into the prompt; it renders as an image bubble.
+
+**Headless (no EDH):** render any transcript's Activity feed as text from the Tachyon repo —
+
+```bash
+npm run activity:preview -- ~/.claude/projects/<enc-cwd>/<session>.jsonl
+```
+
+(Drives the same pure normalizer + view-model the webview uses — handy for spotting transcript
+shapes the cockpit drops to `raw`.)
